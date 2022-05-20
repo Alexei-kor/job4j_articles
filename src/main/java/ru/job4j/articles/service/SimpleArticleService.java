@@ -22,10 +22,10 @@ public class SimpleArticleService implements ArticleService {
 
     @Override
     public void generate(Store<Word> wordStore, int count, Store<Article> articleStore) {
-        LOGGER.info("Геренация статей в количестве {}", count);
+        var words = wordStore.findAll();
         IntStream.iterate(0, i -> i < count, i -> i + 1)
-                .peek(i -> LOGGER.info("Сгенерирована статья № {}", i))
-                .mapToObj((x) -> articleGenerator.generate(wordStore.findAll()))
-                .forEach(articleStore::save);
+            .peek(i -> LOGGER.info("Сгенерирована статья № {}", i))
+            .mapToObj((x) -> articleGenerator.generate(words))
+            .forEach(articleStore::save);
     }
 }
