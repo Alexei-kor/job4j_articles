@@ -2,7 +2,6 @@ package ru.job4j.articles.store;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.job4j.articles.cashe.WordsCache;
 import ru.job4j.articles.model.Word;
 
 import java.nio.file.Files;
@@ -15,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class WordStore extends WordsCache implements Store<Word>, AutoCloseable {
+public class WordStore implements Store<Word>, AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WordStore.class.getSimpleName());
 
@@ -93,23 +92,20 @@ public class WordStore extends WordsCache implements Store<Word>, AutoCloseable 
     @Override
     public List<Word> findAll() {
         LOGGER.info("Загрузка всех слов");
-        List<Word> words = getAll();
-        if (words == null) {
-            words = new ArrayList<>();
-            var sql = "select * from dictionary";
-            try (var statement = connection.prepareStatement(sql)) {
-                var selection = statement.executeQuery();
-                while (selection.next()) {
-                    words.add(new Word(
-                            selection.getInt("id"),
-                            selection.getString("word")
-                    ));
-                }
-                addAll(words);
-            } catch (Exception e) {
-                LOGGER.error("Не удалось выполнить операцию: { }", e.getCause());
-                throw new IllegalStateException();
+        var words = new ArrayList<Word>();
+        var sql = "select * from dictionary";
+        try (var statement = connection.prepareStatement(sql)) {
+            var selection = statement.executeQuery();
+            while (selection.next()) {
+                words.add(new Word(
+                        selection.getInt("id"),
+                        selection.getString("word")
+                ));
             }
+
+        } catch (Exception e) {
+            LOGGER.error("Не удалось выполнить операцию: { }", e.getCause());
+            throw new IllegalStateException();
         }
         return words;
     }
